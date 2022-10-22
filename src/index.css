@@ -51,6 +51,20 @@ button {
   }
 }
 
+.messageSign {
+  color: red;
+  position: absolute;
+  top: 5rem
+}
+
+@media (min-width: 1024px) {
+  .messageSign {
+    color: red;
+    position: absolute;
+    top: 6rem
+  }
+}
+
 .textarea {
   padding: 1rem 1.5rem;
   height: 300px;

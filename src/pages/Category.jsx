@@ -16,7 +16,7 @@ import ListingItem from '../components/ListingItem'
 
 
 function Category() {
-  const [listings, setListings] = useState([])
+  const [listings, setListings] = useState()
   const [loading, setLoading] = useState(true)
   const [lastFetchedListing, setLastFetchedListing] = useState(null)
 
@@ -43,7 +43,7 @@ function Category() {
         const lastVisible = querySnap.docs[querySnap.docs.length - 1]
         setLastFetchedListing(lastVisible)
 
-        
+        const listings = []
         
         querySnap.forEach(doc => {
           return listings.push({

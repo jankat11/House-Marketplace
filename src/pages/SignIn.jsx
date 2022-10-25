@@ -79,7 +79,7 @@ function SignIn() {
           </div>
         </form>
 
-        <OAuth />
+        <OAuth  />
 
         <Link to='/sign-up' className='registerLink'>
           Sign Up Instead

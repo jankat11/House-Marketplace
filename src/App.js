@@ -12,7 +12,9 @@ import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
 import Navbar from './components/Navbar'
 import CreateListing from './pages/CreateListing'
+import EditListing from './pages/EditListing'
 import Listing from './pages/Listing'
+import Contact from './pages/Contact'
 
 function App() {
   window.onclick = (e) => {
@@ -33,6 +35,8 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/create-listing" element={<CreateListing />} />
           <Route path="/category/:categoryName/:listingId" element={<Listing />} />
+          <Route path="/edit-listing/:listingId" element={<EditListing />} />
+          <Route path="/contact/:landlordId" element={<Contact />} />
         </Routes>
           <Navbar />
       </BrowserRouter>

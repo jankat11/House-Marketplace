@@ -70,7 +70,6 @@ function CreateListing() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted])
 
-  console.log("apikey is: ", process.env.REACT_APP_GEOCODE_API_KEY)
 
   const onSubmit = async (e) => {
     e.preventDefault()
@@ -94,7 +93,7 @@ function CreateListing() {
 
     if (geolocationEnabled) {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=AIzaSyA7Wtn8yYpn-5GBMgpVjtEOjLEScBr-sM4`
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`
       )
 
       const data = await response.json()

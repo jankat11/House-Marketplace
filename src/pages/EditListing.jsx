@@ -118,7 +118,6 @@ function EditListing() {
     }
 
     let geolocation = {}
-    let location
 
     if (geolocationEnabled) {
       const response = await fetch(

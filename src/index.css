@@ -3,8 +3,6 @@
   box-sizing: border-box;
 }
 
-
-
 html::-webkit-scrollbar {
   display: none;
 }
@@ -100,7 +98,7 @@ button {
 }
 
 .removeIcon, .editIcon {
-  top: 5px;
+  top: 13px;
 }
 
 .pageContainer,

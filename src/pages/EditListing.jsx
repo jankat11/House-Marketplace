@@ -125,6 +125,7 @@ function EditListing() {
       )
 
       const data = await response.json()
+      console.log("data is", data)
 
       geolocation.lat = data.data[0]?.latitude ?? 0
       geolocation.lng = data.data[0]?.longitude ?? 0

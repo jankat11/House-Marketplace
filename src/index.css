@@ -506,6 +506,21 @@ button {
   width: 75%;
 }
 
+.navbarProfile {
+  position: relative;
+  right: 5px;
+}
+
+.navbarExplore {
+  position: relative;
+  right: 10px;
+}
+
+.navbarOffer {
+  position: relative;
+  right: 3px;
+}
+
 .categoryListingName {
   font-weight: 600;
   font-size: 1.25rem;

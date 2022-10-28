@@ -23,8 +23,8 @@ function Navbar() {
                   <p
                     className={
                       isActive
-                        ? 'navbarListItemNameActive'
-                        : 'navbarListItemName'
+                        ? 'navbarListItemNameActive navbarExplore'
+                        : 'navbarListItemName navbarExplore'
                     }
                   >
                     Explore
@@ -45,8 +45,8 @@ function Navbar() {
                   <p
                     className={
                       isActive
-                        ? 'navbarListItemNameActive'
-                        : 'navbarListItemName'
+                        ? 'navbarListItemNameActive navbarOffer'
+                        : 'navbarListItemName navbarOffer'
                     }
                   >
                     Offers
@@ -67,8 +67,8 @@ function Navbar() {
                   <p
                     className={
                       isActive
-                        ? 'navbarListItemNameActive'
-                        : 'navbarListItemName'
+                        ? 'navbarListItemNameActive navbarProfile'
+                        : 'navbarListItemName navbarProfile'
                     }
                   >
                     Profile

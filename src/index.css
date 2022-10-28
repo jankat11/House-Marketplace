@@ -102,11 +102,23 @@ button {
 .editIcon {
   cursor: pointer;
   position: absolute;
-  right: 23px;
+  right: 30px;
 }
 
 .removeIcon, .editIcon {
   top: 13px;
+}
+
+@media (min-width: 1024px) {
+  .removeIcon, .editIcon {
+    height: 25px;
+    width: 25px;
+  }
+}
+@media (min-width: 1024px) {
+   .editIcon {
+    right: 50px;
+  }
 }
 
 .pageContainer,
@@ -487,7 +499,11 @@ button {
   font-size: 0.7rem;
   opacity: 0.8;
   margin-bottom: 0;
-  width: 81%;
+  width: 100;
+}
+
+.categoryListingLocationEdit {
+  width: 75%;
 }
 
 .categoryListingName {
@@ -495,6 +511,8 @@ button {
   font-size: 1.25rem;
   margin: 0;
   margin-top: 5px;
+  position: relative;
+  top: 5px;
  
 }
 
@@ -506,12 +524,16 @@ button {
   margin-bottom: 0;
   display: flex;
   align-items: center;
+  position: relative;
+  top: 3px;
 }
 
 .categoryListingInfoDiv {
   display: flex;
   justify-content: space-between;
   max-width: 275px;
+  position: relative;
+  top: 3px;
 }
 
 .categoryListingInfoText {

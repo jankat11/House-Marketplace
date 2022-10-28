@@ -5,6 +5,7 @@ import {
   ref,
   uploadBytesResumable,
   getDownloadURL,
+  deleteObject
 } from 'firebase/storage'
 import { doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase.config'
@@ -15,7 +16,8 @@ import Spinner from '../components/Spinner'
 
 function EditListing() {
   // eslint-disable-next-line
-  const [geolocationEnabled, setGeolocationEnabled] = useState(true)
+  const [geolocationEnabled, setGeolocationEnabled] = useState(false)
+  const [reloadImages, setReloadImages] = useState(false)
   const [loading, setLoading] = useState(false)
   const [listing, setListing] = useState(false)
   const [formData, setFormData] = useState({
@@ -29,7 +31,7 @@ function EditListing() {
     offer: false,
     regularPrice: 0,
     discountedPrice: 0,
-    images: {},
+    images: [],
     latitude: 0,
     longitude: 0,
   })
@@ -71,13 +73,14 @@ function EditListing() {
       const docSnap = await getDoc(docRef)
       if (docSnap.exists()) {
         setListing(docSnap.data())
-        setFormData({ ...docSnap.data(), address: docSnap.data().location })
+        setFormData({ ...docSnap.data(), address: docSnap.data().location, images: [] })
+        setGeolocationEnabled(docSnap.data().showMap)
         setLoading(false)
       } else {
         navigate('/')
         toast.error('Listing does not exist')
       }
-    }
+    } 
 
     fetchListing()
   }, [params.listingId, navigate])
@@ -101,6 +104,7 @@ function EditListing() {
   }, [isMounted])
 
   const onSubmit = async (e) => {
+    let formDataCopy;
     e.preventDefault()
 
     setLoading(true)
@@ -119,91 +123,97 @@ function EditListing() {
 
     let geolocation = {}
 
-    if (geolocationEnabled) {
-      const response = await fetch(
-        `http://api.positionstack.com/v1/forward?access_key=${process.env.REACT_APP_GEOCODE_API_KEY}&query=${address}`
-      )
-
-      const data = await response.json()
-      console.log("data is", data)
-
-      geolocation.lat = data.data[0]?.latitude ?? 0
-      geolocation.lng = data.data[0]?.longitude ?? 0
-
-
-      if (data.data.length === 0) {
-        setLoading(false)
-        toast.error('Please enter a correct address')
-        return
-      }
-    } else {
       geolocation.lat = latitude
       geolocation.lng = longitude
-    }
+    
 
-    // Store image in firebase
-    const storeImage = async (image) => {
-      return new Promise((resolve, reject) => {
-        const storage = getStorage()
-        const fileName = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`
+    if (reloadImages) {
+      // Store image in firebase
+      const storeImage = async (image) => {
+        return new Promise((resolve, reject) => {
+          const storage = getStorage()
+          const fileName = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`
 
-        const storageRef = ref(storage, 'images/' + fileName)
+          const storageRef = ref(storage, 'images/' + fileName)
 
-        const uploadTask = uploadBytesResumable(storageRef, image)
+          const uploadTask = uploadBytesResumable(storageRef, image)
 
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            const progress =
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-            console.log('Upload is ' + progress + '% done')
-            switch (snapshot.state) {
-              case 'paused':
-                console.log('Upload is paused')
-                break
-              case 'running':
-                console.log('Upload is running')
-                break
-              default:
-                break
+          uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+              const progress =
+                (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+              console.log('Upload is ' + progress + '% done')
+              switch (snapshot.state) {
+                case 'paused':
+                  console.log('Upload is paused')
+                  break
+                case 'running':
+                  console.log('Upload is running')
+                  break
+                default:
+                  break
+              }
+            },
+            (error) => {
+              reject(error)
+            },
+            () => {
+              // Handle successful uploads on complete
+              // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+              getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                resolve(downloadURL)
+              })
             }
-          },
-          (error) => {
-            reject(error)
-          },
-          () => {
-            // Handle successful uploads on complete
-            // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-              resolve(downloadURL)
-            })
-          }
-        )
+          )
+        })
+      }
+
+      const imgUrls = await Promise.all(
+        [...images].map((image) => storeImage(image))
+      ).catch(() => {
+        setLoading(false)
+        toast.error('Images not uploaded')
+        return
       })
-    }
 
-    const imgUrls = await Promise.all(
-      [...images].map((image) => storeImage(image))
-    ).catch(() => {
-      setLoading(false)
-      toast.error('Images not uploaded')
-      return
-    })
+      formData.imgUrls.forEach((image, index) => {
+        const imageName = (auth.currentUser.uid +
+          formData.imgUrls[index]
+          .split(auth.currentUser.uid)[1])
+          .split("?alt=media&token")[0]
+        const storage = getStorage();
+        const desertRef = ref(storage, `images/${imageName}`);
+        deleteObject(desertRef).then(() => {
+          console.log("succesfuly deleted!")
+        }).catch((error) => {
+          console.log(error)
+        });
+      })
 
-    const formDataCopy = {
-      ...formData,
-      imgUrls,
-      geolocation,
-      timestamp: serverTimestamp(),
+      formDataCopy = {
+        ...formData,
+        imgUrls,
+        geolocation,
+        timestamp: serverTimestamp(),
+      }
+    } else {
+      formDataCopy = {
+        ...formData,
+        geolocation,
+        timestamp: serverTimestamp(),
+      }
     }
 
     formDataCopy.location = address
     delete formDataCopy.images
     delete formDataCopy.address
     !formDataCopy.offer && delete formDataCopy.discountedPrice
+    geolocationEnabled ? formDataCopy.showMap = true : formDataCopy.showMap = false
 
     // Update listing
     const docRef = doc(db, 'listings', params.listingId)
+
     await updateDoc(docRef, formDataCopy)
     setLoading(false)
     toast.success('Listing saved')
@@ -374,32 +384,38 @@ function EditListing() {
             required
           />
 
-          {!geolocationEnabled && (
-            <div className='formLatLng flex'>
-              <div>
-                <label className='formLabel'>Latitude</label>
-                <input
-                  className='formInputSmall'
-                  type='number'
-                  id='latitude'
-                  value={latitude}
-                  onChange={onMutate}
-                  required
-                />
-              </div>
-              <div>
-                <label className='formLabel'>Longitude</label>
-                <input
-                  className='formInputSmall'
-                  type='number'
-                  id='longitude'
-                  value={longitude}
-                  onChange={onMutate}
-                  required
-                />
-              </div>
+          <label className='formLabel reloadLabel'>Show location on map</label>
+          <input type="checkbox" className='reloadCheckbox' 
+            onChange={() => setGeolocationEnabled(!geolocationEnabled)} 
+            checked={geolocationEnabled} />
+          
+          <div className='formLatLng flex'>
+            <div>
+              <label className={geolocationEnabled ? 'formLabel' : "formLabel formlabelDisablded"}>Latitude</label>
+              <input
+                className='formInputSmall'
+                type='number'
+                id='latitude'
+                value={latitude}
+                onChange={onMutate}   
+                disabled={!geolocationEnabled}
+                style={{color: !geolocationEnabled && '#acacac'}}
+              />
             </div>
-          )}
+            <div>
+              <label className={geolocationEnabled ? 'formLabel' : "formLabel formlabelDisablded"}>Longitude</label>
+              <input
+                className='formInputSmall'
+                type='number'
+                id='longitude'
+                value={longitude}
+                onChange={onMutate}
+                disabled={!geolocationEnabled}
+                style={{color: !geolocationEnabled && '#acacac'}}
+              />
+            </div>
+          </div>
+          
 
           <label className='formLabel'>Offer</label>
           <div className='formButtons'>
@@ -456,7 +472,8 @@ function EditListing() {
             </>
           )}
 
-          <label className='formLabel'>Images</label>
+          <label className='formLabel reloadLabel'>Reload Images</label>
+          <input type="checkbox" className='reloadCheckbox' onChange={() => setReloadImages(!reloadImages)} checked={reloadImages} />
           <p className='imagesInfo'>
             The first image will be the cover (max 6).
           </p>
@@ -468,7 +485,8 @@ function EditListing() {
             max='6'
             accept='.jpg,.png,.jpeg'
             multiple
-            required
+            disabled={!reloadImages}
+            required={reloadImages}
           />
           <button type='submit' className='primaryButton createListingButton'>
             Edit Listing

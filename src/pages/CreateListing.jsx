@@ -15,7 +15,7 @@ import Spinner from '../components/Spinner'
 
 function CreateListing() {
   // eslint-disable-next-line
-  const [geolocationEnabled, setGeolocationEnabled] = useState(true)
+  const [geolocationEnabled, setGeolocationEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     type: 'rent',
@@ -31,6 +31,7 @@ function CreateListing() {
     images: {},
     latitude: 0,
     longitude: 0,
+    showMap: false
   })
 
   const {
@@ -47,6 +48,7 @@ function CreateListing() {
     images,
     latitude,
     longitude,
+    showMap,
   } = formData
 
   const auth = getAuth()
@@ -90,27 +92,9 @@ function CreateListing() {
 
     let geolocation = {}
 
-    if (geolocationEnabled) {
-      const response = await fetch(
-        `http://api.positionstack.com/v1/forward?access_key=${process.env.REACT_APP_GEOCODE_API_KEY}&query=${address}`
-      )
-
-      const data = await response.json()
-      console.log("data is", data)
-
-      geolocation.lat = data.data[0]?.latitude ?? 0
-      geolocation.lng = data.data[0]?.longitude ?? 0
-
-
-      if (data.data.length === 0) {
-        setLoading(false)
-        toast.error('Please enter a correct address')
-        return
-      }
-    } else {
-      geolocation.lat = latitude
-      geolocation.lng = longitude
-    }
+    geolocation.lat = latitude
+    geolocation.lng = longitude
+    
 
      // Store image in firebase
     const storeImage = async (image) => {
@@ -172,6 +156,7 @@ function CreateListing() {
     delete formDataCopy.images
     delete formDataCopy.address
     !formDataCopy.offer && delete formDataCopy.discountedPrice
+    geolocationEnabled ? formDataCopy.showMap = true : formDataCopy.showMap = false
 
     const docRef = await addDoc(collection(db, 'listings'), formDataCopy)
     setLoading(false)
@@ -343,32 +328,39 @@ function CreateListing() {
             required
           />
 
-          {!geolocationEnabled && (
+          <label className='formLabel reloadLabel'>Show location on map</label>
+          <input type="checkbox" className='reloadCheckbox' 
+            onChange={() => setGeolocationEnabled(!geolocationEnabled)} 
+            checked={geolocationEnabled} />
+
+          
             <div className='formLatLng flex'>
               <div>
-                <label className='formLabel'>Latitude</label>
+                <label  className={geolocationEnabled ? 'formLabel' : "formLabel formlabelDisablded"}>Latitude</label>
                 <input
                   className='formInputSmall'
                   type='number'
                   id='latitude'
                   value={latitude}
                   onChange={onMutate}
-                  required
+                  disabled={!geolocationEnabled}
+                  style={{color: !geolocationEnabled && '#acacac'}}
                 />
               </div>
               <div>
-                <label className='formLabel'>Longitude</label>
+                <label  className={geolocationEnabled ? 'formLabel' : "formLabel formlabelDisablded"}>Longitude</label>
                 <input
                   className='formInputSmall'
                   type='number'
                   id='longitude'
                   value={longitude}
                   onChange={onMutate}
-                  required
+                  disabled={!geolocationEnabled}
+                  style={{color: !geolocationEnabled && '#acacac'}}
                 />
               </div>
             </div>
-          )}
+          
 
           <label className='formLabel'>Offer</label>
           <div className='formButtons'>

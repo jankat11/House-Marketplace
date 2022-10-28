@@ -109,7 +109,9 @@ function Listing() {
           <li>{listing.furnished && 'Furnished'}</li>
         </ul>
 
-        <p className='listingLocationTitle'>Location</p>
+        {listing.showMap && ( 
+        <>
+        <p className='listingLocationTitle'>Location</p> 
 
         <div className='leafletContainer'>
           <MapContainer
@@ -130,6 +132,8 @@ function Listing() {
             </Marker>
           </MapContainer>
         </div>
+        </>
+        )}
 
         {auth.currentUser?.uid !== listing.userRef && (
           <Link

@@ -86,6 +86,14 @@ button {
   justify-content: center;
 }
 
+.formInputFile:disabled, .formInputSmall:disabled {
+  background: #eeeeeec0
+}
+
+.formlabelDisablded {
+  color: #acacac;
+}
+
 .removeIcon {
   cursor: pointer;
   position: absolute;
@@ -348,6 +356,27 @@ button {
   width: 100%;
   height: 100%;
 }
+
+
+
+.reloadCheckbox  {
+
+  width: 15px;
+  height: 15px;
+  position: relative;
+  top: 2px;
+  background-color: #fff;
+
+}
+
+
+
+@media (max-width: 600px) {
+  .formLatLng {
+    flex-direction: column;
+  }
+}
+
 
 .swiperSlideImg {
   width: 100%;
@@ -738,6 +767,10 @@ button {
   display: block;
 }
 
+.reloadLabel {
+  display: inline-block;
+}
+
 .formButtons {
   display: flex;
 }
@@ -822,6 +855,10 @@ button {
   padding: 0.5rem 0.75rem;
   border-radius: 1rem;
   margin-right: 1rem;
+}
+
+.formInputFile:disabled::-webkit-file-upload-button  {
+  background-color: #c0c0c0;
 }
 
 .createListingButton {

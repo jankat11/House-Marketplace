@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getAuth, updateProfile } from 'firebase/auth'
+import { getStorage, ref, deleteObject } from "firebase/storage"
 import {
   updateDoc,
   doc,
@@ -94,6 +95,23 @@ function Profile() {
 
   const onDelete = async (listingId) => {
     if (window.confirm('Are you sure you want to delete?')) {
+      listings.forEach(listing => {
+        if (listing.id === listingId) {
+          listing.data.imgUrls.forEach((image, index) => {
+            const imageName = (auth.currentUser.uid + 
+              listing.data.imgUrls[index]
+              .split(auth.currentUser.uid)[1])
+              .split("?alt=media&token")[0]
+            const storage = getStorage();
+            const desertRef = ref(storage, `images/${imageName}`);
+            deleteObject(desertRef).then(() => {
+              console.log("succesfuly deleted!")
+            }).catch((error) => {
+              console.log(error)
+            });
+          })
+        }  
+      })
       await deleteDoc(doc(db, 'listings', listingId))
       const updatedListings = listings.filter(
         (listing) => listing.id !== listingId

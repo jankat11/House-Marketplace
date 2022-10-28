@@ -48,7 +48,6 @@ function CreateListing() {
     images,
     latitude,
     longitude,
-    showMap,
   } = formData
 
   const auth = getAuth()
